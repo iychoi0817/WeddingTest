@@ -47,7 +47,12 @@ body {
   font-weight: 400;
   line-height: 1.8;
   word-break: keep-all;
+  /* 복붙 방지: 텍스트 선택·길게 누르기 메뉴 차단 */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
+img { -webkit-user-drag: none; pointer-events: none; }
 button { font: inherit; color: inherit; cursor: pointer; }
 a { color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
@@ -176,7 +181,6 @@ details[open] summary::after { content: "−"; }
 .acc-who { font-size: 12px; color: var(--muted); }
 .acc-num {
   font-size: 14px; font-variant-numeric: tabular-nums;
-  -webkit-user-select: text; user-select: text;
 }
 .acc-item .btn { flex-shrink: 0; padding: 7px 12px; font-size: 12px; }
 
@@ -484,14 +488,30 @@ async function copyText(text, msg) {
   } catch (_) {
     const ta = document.createElement("textarea");
     ta.value = text; ta.setAttribute("readonly", "");
-    ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;";
+    ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;-webkit-user-select:text;user-select:text;";
     document.body.appendChild(ta); ta.select();
     let ok = false;
+    allowCopy = true;   // 아래 복사 차단을 잠깐 해제
     try { ok = document.execCommand("copy"); } catch (_) {}
+    allowCopy = false;
     ta.remove();
-    toast(ok ? msg : "복사하지 못했어요. 길게 눌러 직접 복사해 주세요");
+    toast(ok ? msg : "복사하지 못했어요. 잠시 후 다시 시도해 주세요");
   }
 }
+
+/* 복붙 방지: 버튼으로 하는 복사(주소·계좌·링크)만 허용 */
+let allowCopy = false;
+["copy", "cut", "contextmenu", "selectstart", "dragstart"].forEach((type) => {
+  document.addEventListener(type, (e) => {
+    if (allowCopy) return;
+    if (type === "selectstart" && e.target.closest && e.target.closest("textarea, input")) return;
+    e.preventDefault();
+  });
+});
+document.addEventListener("keydown", (e) => {
+  const k = e.key.toLowerCase();
+  if ((e.ctrlKey || e.metaKey) && ["c", "x", "a", "s", "u", "p"].includes(k)) e.preventDefault();
+});
 
 let toastTimer;
 function toast(msg) {
