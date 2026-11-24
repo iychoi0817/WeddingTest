@@ -50,6 +50,14 @@ body {
   line-height: 1.8;
   word-break: keep-all;
 }
+/* 이미지 저장·복사 방지 */
+img {
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: none;
+}
 button { font: inherit; color: inherit; cursor: pointer; }
 a { color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
@@ -125,7 +133,7 @@ h2 {
 .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .gallery button {
   border: 0; padding: 0; aspect-ratio: 1; overflow: hidden;
-  background: var(--placeholder);
+  background: var(--placeholder); -webkit-touch-callout: none;
 }
 .gallery img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
@@ -406,7 +414,7 @@ let current = 0;
 const N = WEDDING.photos.length;
 $("heroPhoto").src = WEDDING.mainPhoto;
 $("gallery").innerHTML = WEDDING.photos.map((src, i) =>
-  `<button type="button" data-i="${i}" aria-label="사진 ${i + 1} 크게 보기"><img src="${src}" alt="" loading="lazy"></button>`
+  `<button type="button" data-i="${i}" aria-label="사진 ${i + 1} 크게 보기"><img src="${src}" alt="" loading="lazy" draggable="false"></button>`
 ).join("");
 function showPhoto(i) {
   current = (i + N) % N;
@@ -504,6 +512,13 @@ async function copyText(text, msg) {
     toast(ok ? msg : "복사하지 못했어요. 길게 눌러 직접 복사해 주세요");
   }
 }
+
+/* 이미지 우클릭·드래그 저장 방지 */
+["contextmenu", "dragstart"].forEach((t) =>
+  document.addEventListener(t, (e) => {
+    if (e.target.closest("img, .hero-photo, .gallery, #lightbox")) e.preventDefault();
+  })
+);
 
 /* 확대 방지 (iOS 사파리는 viewport 설정을 무시하므로 추가 처리) */
 ["gesturestart", "gesturechange", "gestureend"].forEach((t) =>
