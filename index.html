@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>도윤 서윤 모바일 청첩장</title>
 
 <!-- 검색 노출 방지 (이름·계좌가 들어가므로) -->
@@ -39,6 +39,8 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { -webkit-text-size-adjust: 100%; }
+/* 확대 방지: 핀치 줌·더블탭 줌 막고 스크롤만 허용 */
+html, body { touch-action: pan-x pan-y; }
 body {
   background: var(--surface);
   color: var(--ink);
@@ -508,6 +510,21 @@ let allowCopy = false;
     e.preventDefault();
   });
 });
+/* 확대 방지 (iOS 사파리는 viewport 설정을 무시하므로 추가 처리) */
+["gesturestart", "gesturechange", "gestureend"].forEach((t) =>
+  document.addEventListener(t, (e) => e.preventDefault())
+);
+document.addEventListener("touchmove", (e) => {
+  if (e.touches.length > 1) e.preventDefault();
+}, { passive: false });
+let lastTouchEnd = 0;
+document.addEventListener("touchend", (e) => {
+  const now = Date.now();
+  // 버튼·링크는 연속 탭이 막히지 않게 제외
+  if (now - lastTouchEnd < 300 && !e.target.closest("button, a, summary")) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
+
 document.addEventListener("keydown", (e) => {
   const k = e.key.toLowerCase();
   if ((e.ctrlKey || e.metaKey) && ["c", "x", "a", "s", "u", "p"].includes(k)) e.preventDefault();
