@@ -87,7 +87,10 @@ h2 {
   color: var(--muted);
 }
 .hero-day { font-size: 11px; letter-spacing: .3em; color: var(--accent); margin-top: 2px; }
-.hero-photo { width: 100%; aspect-ratio: 3 / 4; margin: 28px 0 36px; }
+.hero-photo {
+  display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover;
+  margin: 28px 0 36px; background: var(--placeholder);
+}
 .hero-names {
   font-family: var(--font-display); font-weight: 400; font-size: 26px;
   display: flex; align-items: center; justify-content: center; gap: 14px;
@@ -126,7 +129,11 @@ h2 {
 
 /* 갤러리 */
 .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
-.gallery button { border: 0; aspect-ratio: 1; }
+.gallery button {
+  border: 0; padding: 0; aspect-ratio: 1; overflow: hidden;
+  background: var(--placeholder); -webkit-touch-callout: none;
+}
+.gallery img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
 .lightbox {
   position: fixed; inset: 0; background: rgba(20, 20, 19, .94);
@@ -134,7 +141,9 @@ h2 {
   z-index: 20; padding: 24px;
 }
 .lightbox.open { display: flex; }
-.lightbox .ph { width: 100%; max-width: 400px; aspect-ratio: 3 / 4; }
+.lb-photo {
+  display: block; width: 100%; max-width: 400px; max-height: 75vh; object-fit: contain;
+}
 .lb-bar {
   width: 100%; max-width: 400px; display: flex; justify-content: space-between;
   align-items: center; color: #d6d5d0; font-size: 13px; margin-top: 16px;
@@ -211,7 +220,7 @@ footer { padding: 28px 24px 40px; text-align: center; font-size: 11px; color: #b
   <header class="hero">
     <p class="hero-date" id="heroDate"></p>
     <p class="hero-day" id="heroDay"></p>
-    <div class="ph hero-photo">메인 사진</div>
+    <img class="hero-photo" id="heroPhoto" alt="메인 사진">
     <h1 class="hero-names">
       <span id="groomName"></span><span class="and">그리고</span><span id="brideName"></span>
     </h1>
@@ -301,7 +310,7 @@ footer { padding: 28px 24px 40px; text-align: center; font-size: 11px; color: #b
 
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="사진 보기">
   <button class="lb-close" id="lbClose" type="button">닫기</button>
-  <div class="ph" id="lbPhoto"></div>
+  <img class="lb-photo" id="lbPhoto" alt="">
   <div class="lb-bar">
     <button id="lbPrev" type="button">이전</button>
     <span id="lbCount"></span>
@@ -321,7 +330,8 @@ const WEDDING = {
   hall: "그랜드볼룸",
   address: "서울 구로구 경인로 624",
   mapQuery: "라마다 서울 신도림",
-  photoCount: 9,
+  mainPhoto: "photo.jpg",
+  photos: Array(9).fill("photo.jpg"),   // 갤러리 사진 경로 목록 (예: ["img/01.jpg", "img/02.jpg", ...])
   accounts: {
     groom: [
       { who: "신랑", name: "김도윤", bank: "국민은행", number: "000000-00-000000" },
@@ -399,13 +409,15 @@ $("calSub").textContent = `${dateKo} ${timeKo(d)}`;
 
 /* 갤러리 + 라이트박스 */
 let current = 0;
-const N = WEDDING.photoCount;
-$("gallery").innerHTML = Array.from({ length: N }, (_, i) =>
-  `<button class="ph" type="button" data-i="${i}" aria-label="사진 ${i + 1} 크게 보기">사진 ${i + 1}</button>`
+const N = WEDDING.photos.length;
+$("heroPhoto").src = WEDDING.mainPhoto;
+$("gallery").innerHTML = WEDDING.photos.map((src, i) =>
+  `<button type="button" data-i="${i}" aria-label="사진 ${i + 1} 크게 보기"><img src="${src}" alt="" loading="lazy" draggable="false"></button>`
 ).join("");
 function showPhoto(i) {
   current = (i + N) % N;
-  $("lbPhoto").textContent = `사진 ${current + 1}`;
+  $("lbPhoto").src = WEDDING.photos[current];
+  $("lbPhoto").alt = `사진 ${current + 1}`;
   $("lbCount").textContent = `${current + 1} / ${N}`;
 }
 function openLb(i) { showPhoto(i); $("lightbox").classList.add("open"); document.body.style.overflow = "hidden"; $("lbClose").focus(); }
