@@ -50,7 +50,6 @@ body {
   line-height: 1.8;
   word-break: keep-all;
 }
-img { -webkit-user-drag: none; pointer-events: none; }
 button { font: inherit; color: inherit; cursor: pointer; }
 a { color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
@@ -73,7 +72,6 @@ h2 {
   display: flex; align-items: center; justify-content: center;
   color: #9b9a95; font-size: 13px; letter-spacing: .04em;
   -webkit-user-select: none; user-select: none;
-  -webkit-touch-callout: none;  /* 길게 눌러 저장 방지 */
 }
 
 /* Hero */
@@ -127,7 +125,7 @@ h2 {
 .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .gallery button {
   border: 0; padding: 0; aspect-ratio: 1; overflow: hidden;
-  background: var(--placeholder); -webkit-touch-callout: none;
+  background: var(--placeholder);
 }
 .gallery img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
@@ -408,7 +406,7 @@ let current = 0;
 const N = WEDDING.photos.length;
 $("heroPhoto").src = WEDDING.mainPhoto;
 $("gallery").innerHTML = WEDDING.photos.map((src, i) =>
-  `<button type="button" data-i="${i}" aria-label="사진 ${i + 1} 크게 보기"><img src="${src}" alt="" loading="lazy" draggable="false"></button>`
+  `<button type="button" data-i="${i}" aria-label="사진 ${i + 1} 크게 보기"><img src="${src}" alt="" loading="lazy"></button>`
 ).join("");
 function showPhoto(i) {
   current = (i + N) % N;
